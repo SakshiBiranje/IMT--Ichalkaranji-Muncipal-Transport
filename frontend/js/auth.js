@@ -21,6 +21,39 @@ document.addEventListener('DOMContentLoaded', function() {
       });
   });
   
+
+  document.getElementById("register-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = {
+        firstName: document.getElementById("first-name").value,
+        lastName: document.getElementById("last-name").value,
+        email: document.getElementById("register-email").value,
+        phone: document.getElementById("phone").value,
+        password: document.getElementById("register-password").value,
+    };
+
+    const res = await fetch("http://localhost:5000/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    });
+
+    const result = await res.json();
+    alert(result.message);
+    const userOTP = prompt("Enter the OTP sent to your email:");
+    
+    const verifyRes = await fetch("http://localhost:5000/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, otp: userOTP }),
+    });
+
+    const verifyResult = await verifyRes.json();
+    alert(verifyResult.message || verifyResult.error);
+});
+
+
+
   // Handle login form submission
   const loginForm = document.getElementById('login-form');
   if (loginForm) {
