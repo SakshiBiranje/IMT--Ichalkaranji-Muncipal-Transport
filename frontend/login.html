@@ -12,8 +12,7 @@
     <header>
         <div class="container">
             <nav class="navbar">
-                <div class="navbar-brand">
-                   <!--  <img src="assets/images/logo.png" alt="IBBPS Logo" class="logo">-->
+                <div class="navbar-brand">                 
                     <h1>IMT</h1>
                 </div>
                 <ul class="nav-menu">
@@ -37,8 +36,10 @@
             <div class="container">
                 <div class="auth-container">
                     <div class="auth-form-container">
-                        <h2>Login to Your Account</h2>
-                        <form id="login-form" class="auth-form">
+                        <h2>Login to Your Account</h2>                      
+                        <form id="login-form" class="auth-form" method="POST" action="http://localhost:5000/login">
+
+
                             <div class="form-group">
                                 <label for="email">Email</label>
                                 <input type="email" id="email" name="email" placeholder="Enter your email" required>
@@ -114,7 +115,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 IMT - Ichalkaranji Muncipal Transport. All rights reserved.</p>
+                <p>&copy; 2025 IMT - Ichalkaranji Municipal Transport. All rights reserved.</p>
             </div>
         </div>
     </footer>
