@@ -1,331 +1,223 @@
-// auth.js - Handles authentication functionality for login and registration
-
 document.addEventListener('DOMContentLoaded', function() {
-  // Toggle password visibility
-  const togglePasswordButtons = document.querySelectorAll('.toggle-password');
-  
-  togglePasswordButtons.forEach(button => {
-      button.addEventListener('click', function() {
-          const passwordInput = this.previousElementSibling;
-          
-          // Toggle the password visibility
-          if (passwordInput.type === 'password') {
-              passwordInput.type = 'text';
-              this.classList.remove('fa-eye-slash');
-              this.classList.add('fa-eye');
-          } else {
-              passwordInput.type = 'password';
-              this.classList.remove('fa-eye');
-              this.classList.add('fa-eye-slash');
-          }
-      });
-  });
-  
+    // Check if the user is logged in
+    checkLoginStatus();
 
-  document.getElementById("register-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const data = {
-        firstName: document.getElementById("first-name").value,
-        lastName: document.getElementById("last-name").value,
-        email: document.getElementById("register-email").value,
-        phone: document.getElementById("phone").value,
-        password: document.getElementById("register-password").value,
-    };
-
-    const res = await fetch("http://localhost:5000/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+    // Toggle password visibility
+    const togglePasswordButtons = document.querySelectorAll('.toggle-password');
+    togglePasswordButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const passwordInput = this.previousElementSibling;
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                this.classList.remove('fa-eye-slash');
+                this.classList.add('fa-eye');
+            } else {
+                passwordInput.type = 'password';
+                this.classList.remove('fa-eye');
+                this.classList.add('fa-eye-slash');
+            }
+        });
     });
 
-    const result = await res.json();
-    alert(result.message);
-    const userOTP = prompt("Enter the OTP sent to your email:");
+    // Handle login form submission
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('remember')?.checked || false;
+
+            if (!email || !password) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            if (!validateEmail(email)) {
+                showNotification('Please enter a valid email address', 'error');
+                return;
+            }
+
+            loginUser(email, password, rememberMe);
+        });
+    }
+
+    // Handle registration form submission
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const firstName = document.getElementById('first-name').value;
+            const lastName = document.getElementById('last-name').value;
+            const email = document.getElementById('register-email').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const termsAgreed = document.getElementById('terms')?.checked || false;
+
+            if (!firstName || !lastName || !email || !phone || !password || !confirmPassword) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            if (!validateEmail(email)) {
+                showNotification('Please enter a valid email address', 'error');
+                return;
+            }
+
+            if (phone.length !== 10 || !/^\d+$/.test(phone)) {
+                showNotification('Please enter a valid 10-digit phone number', 'error');
+                return;
+            }
+
+            if (password.length < 8) {
+                showNotification('Password must be at least 8 characters long', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match', 'error');
+                return;
+            }
+
+            if (!termsAgreed) {
+                showNotification('You must agree to the Terms and Conditions', 'error');
+                return;
+            }
+
+            registerUser(firstName, lastName, email, phone, password);
+        });
+    }
+
+    // Social login buttons
+    const googleLoginButtons = document.querySelectorAll('.btn-google');
+    googleLoginButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            showNotification('Google login functionality will be integrated with backend', 'info');
+        });
+    });
+
+    // Logout button functionality
+    const logoutButton = document.getElementById('logout-button');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', function() {
+            logoutUser();
+        });
+    }
+
+});
+
+// Function to check if user is logged in
+function checkLoginStatus() {
+    const currentUser = localStorage.getItem('currentUser');
+    const logoutButton = document.getElementById('logout-button');
+    const loginButton = document.getElementById('login-button');
+
+    if (currentUser) {
+        // Show logout button, hide login button
+        logoutButton.style.display = 'block';
+        loginButton.style.display = 'none';
+    } else {
+        // Show login button, hide logout button
+        loginButton.style.display = 'block';
+        logoutButton.style.display = 'none';
+    }
+}
+
+// Logout user and clear session
+function logoutUser() {
+    // Clear user data from localStorage
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('authToken');
     
-    const verifyRes = await fetch("http://localhost:5000/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, otp: userOTP }),
-    });
+    // Show notification and redirect to login page
+    showNotification('Logout successful', 'success');
+    setTimeout(() => {
+        window.location.href = 'login.html'; // Redirect to login page
+    }, 1000);
+}
 
-    const verifyResult = await verifyRes.json();
-    alert(verifyResult.message || verifyResult.error);
-});
+// New loginUser() function (Real)
+async function loginUser(email, password, rememberMe) {
+    try {
+        const formData = new FormData();
+        formData.append("email", email);
+        formData.append("password", password);
 
+        const res = await fetch("login.php", {
+            method: "POST",
+            body: formData,
+        });
 
+        const result = await res.json();
 
-  // Handle login form submission
-  const loginForm = document.getElementById('login-form');
-  if (loginForm) {
-      loginForm.addEventListener('submit', function(e) {
-          e.preventDefault();
-          
-          const email = document.getElementById('email').value;
-          const password = document.getElementById('password').value;
-          const rememberMe = document.getElementById('remember')?.checked || false;
-          
-          // Form validation
-          if (!email || !password) {
-              showNotification('Please fill in all required fields', 'error');
-              return;
-          }
-          
-          // Email validation
-          if (!validateEmail(email)) {
-              showNotification('Please enter a valid email address', 'error');
-              return;
-          }
-          
-          // Send login request to backend (simulated)
-          loginUser(email, password, rememberMe);
-      });
-  }
-  
-  // Handle registration form submission
-  const registerForm = document.getElementById('register-form');
-  if (registerForm) {
-      registerForm.addEventListener('submit', function(e) {
-          e.preventDefault();
-          
-          const firstName = document.getElementById('first-name').value;
-          const lastName = document.getElementById('last-name').value;
-          const email = document.getElementById('register-email').value;
-          const phone = document.getElementById('phone').value;
-          const password = document.getElementById('register-password').value;
-          const confirmPassword = document.getElementById('confirm-password').value;
-          const termsAgreed = document.getElementById('terms')?.checked || false;
-          
-          // Form validation
-          if (!firstName || !lastName || !email || !phone || !password || !confirmPassword) {
-              showNotification('Please fill in all required fields', 'error');
-              return;
-          }
-          
-          // Email validation
-          if (!validateEmail(email)) {
-              showNotification('Please enter a valid email address', 'error');
-              return;
-          }
-          
-          // Phone number validation
-          if (phone.length !== 10 || !/^\d+$/.test(phone)) {
-              showNotification('Please enter a valid 10-digit phone number', 'error');
-              return;
-          }
-          
-          // Password validation
-          if (password.length < 8) {
-              showNotification('Password must be at least 8 characters long', 'error');
-              return;
-          }
-          
-          // Confirm password validation
-          if (password !== confirmPassword) {
-              showNotification('Passwords do not match', 'error');
-              return;
-          }
-          
-          // Terms and conditions validation
-          if (!termsAgreed) {
-              showNotification('You must agree to the Terms and Conditions', 'error');
-              return;
-          }
-          
-          // Send registration request to backend (simulated)
-          registerUser(firstName, lastName, email, phone, password);
-      });
-  }
-  
-  // Social login buttons
-  const googleLoginButtons = document.querySelectorAll('.btn-google');
-  googleLoginButtons.forEach(button => {
-      button.addEventListener('click', function() {
-          // Simulate Google login
-          showNotification('Google login functionality will be integrated with backend', 'info');
-      });
-  });
-  
-  const facebookLoginButtons = document.querySelectorAll('.btn-facebook');
-  facebookLoginButtons.forEach(button => {
-      button.addEventListener('click', function() {
-          // Simulate Facebook login
-          showNotification('Facebook login functionality will be integrated with backend', 'info');
-      });
-  });
-  
-  // Forgot password link
-  const forgotPasswordLink = document.querySelector('.forgot-password');
-  if (forgotPasswordLink) {
-      forgotPasswordLink.addEventListener('click', function(e) {
-          e.preventDefault();
-          
-          // Display forgot password modal
-          showForgotPasswordModal();
-      });
-  }
-});
+        if (result.status === "success") {
+            showNotification('Login successful', 'success');
+            localStorage.setItem('currentUser', JSON.stringify(result.user));
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1000);
+        } else {
+            showNotification(result.message || "Login failed", 'error');
+        }
+    } catch (error) {
+        console.error(error);
+        showNotification("Something went wrong during login", 'error');
+    }
+}
+
+// New registerUser() function (Real)
+async function registerUser(firstName, lastName, email, phone, password) {
+    try {
+        const formData = new FormData();
+        formData.append("firstName", firstName);
+        formData.append("lastName", lastName);
+        formData.append("email", email);
+        formData.append("phone", phone);
+        formData.append("password", password);
+
+        const res = await fetch("connect.php", {
+            method: "POST",
+            body: formData,
+        });
+
+        const result = await res.json();
+
+        if (result.status === "success") {
+            showNotification('Registration successful', 'success');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1000);
+        } else {
+            showNotification(result.message || "Registration failed", 'error');
+        }
+    } catch (error) {
+        console.error(error);
+        showNotification("Something went wrong during registration", 'error');
+    }
+}
 
 // Helper functions
 function validateEmail(email) {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
 }
 
 function showNotification(message, type = 'success') {
-  // Create notification element
-  const notification = document.createElement('div');
-  notification.className = `notification notification-${type}`;
-  notification.textContent = message;
-  
-  // Append to body
-  document.body.appendChild(notification);
-  
-  // Show notification
-  setTimeout(() => {
-      notification.classList.add('show');
-  }, 10);
-  
-  // Auto-hide after 3 seconds
-  setTimeout(() => {
-      notification.classList.remove('show');
-      setTimeout(() => {
-          document.body.removeChild(notification);
-      }, 300);
-  }, 3000);
-}
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
 
-function showForgotPasswordModal() {
-  // Create modal element
-  const modalOverlay = document.createElement('div');
-  modalOverlay.className = 'modal-overlay';
-  
-  const modalContent = document.createElement('div');
-  modalContent.className = 'modal-content';
-  
-  modalContent.innerHTML = `
-      <h3>Forgot Password</h3>
-      <p>Enter your email address and we'll send you a link to reset your password.</p>
-      <form id="forgot-password-form">
-          <div class="form-group">
-              <label for="forgot-email">Email</label>
-              <input type="email" id="forgot-email" placeholder="Enter your email" required>
-          </div>
-          <div class="form-actions">
-              <button type="button" class="btn btn-secondary close-modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Send Reset Link</button>
-          </div>
-      </form>
-  `;
-  
-  modalOverlay.appendChild(modalContent);
-  document.body.appendChild(modalOverlay);
-  
-  // Show modal
-  setTimeout(() => {
-      modalOverlay.classList.add('show');
-  }, 10);
-  
-  // Handle form submission
-  const forgotPasswordForm = document.getElementById('forgot-password-form');
-  forgotPasswordForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const email = document.getElementById('forgot-email').value;
-      
-      // Email validation
-      if (!validateEmail(email)) {
-          showNotification('Please enter a valid email address', 'error');
-          return;
-      }
-      
-      // Send password reset request (simulated)
-      sendPasswordResetEmail(email);
-      
-      // Close modal
-      closeModal(modalOverlay);
-  });
-  
-  // Handle cancel button
-  const closeButton = modalContent.querySelector('.close-modal');
-  closeButton.addEventListener('click', function() {
-      closeModal(modalOverlay);
-  });
-  
-  // Close modal when clicking outside
-  modalOverlay.addEventListener('click', function(e) {
-      if (e.target === modalOverlay) {
-          closeModal(modalOverlay);
-      }
-  });
-}
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
 
-function closeModal(modal) {
-  modal.classList.remove('show');
-  setTimeout(() => {
-      document.body.removeChild(modal);
-  }, 300);
-}
-
-// API simulation functions
-function loginUser(email, password, rememberMe) {
-  // Simulate API call with timeout
-  setTimeout(() => {
-      // For demo purposes, accept any login
-      const user = {
-          id: 'user123',
-          firstName: 'Test',
-          lastName: 'User',
-          email: email,
-          phone: '1234567890'
-      };
-      
-      // Store user in local storage
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      
-      // Set auth token (in real app, this would come from the server)
-      localStorage.setItem('authToken', 'dummy-auth-token-' + Math.random().toString(36).substring(2));
-      
-      // Show success message
-      showNotification('Login successful', 'success');
-      
-      // Redirect to dashboard
-      setTimeout(() => {
-          window.location.href = 'dashboard.html';
-      }, 1000);
-  }, 1500);
-}
-
-function registerUser(firstName, lastName, email, phone, password) {
-  // Simulate API call with timeout
-  setTimeout(() => {
-      // For demo purposes, accept any registration
-      const user = {
-          id: 'user' + Math.floor(Math.random() * 1000),
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          phone: phone
-      };
-      
-      // Store user in local storage
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      
-      // Set auth token (in real app, this would come from the server)
-      localStorage.setItem('authToken', 'dummy-auth-token-' + Math.random().toString(36).substring(2));
-      
-      // Show success message
-      showNotification('Registration successful', 'success');
-      
-      // Redirect to dashboard
-      setTimeout(() => {
-          window.location.href = 'dashboard.html';
-      }, 1000);
-  }, 1500);
-}
-
-function sendPasswordResetEmail(email) {
-  // Simulate API call
-  setTimeout(() => {
-      showNotification(`Password reset link sent to ${email}`, 'success');
-  }, 1500);
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
 }
