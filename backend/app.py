@@ -1,61 +1,92 @@
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_mail import Mail, Message
-from flask_cors import CORS
-import random
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+import sqlite3
+import os
 
 app = Flask(__name__)
-app.config.from_object('config.Config')
+app.secret_key = 'your_secret_key_2025'  # Change this in production!
 
-db = SQLAlchemy(app)
-mail = Mail(app)
-CORS(app)
+# Database setup
+def init_db():
+    if not os.path.exists('backend/database.db'):
+        conn = sqlite3.connect('backend/database.db')
+        c = conn.cursor()
+        c.execute('''CREATE TABLE users (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        email TEXT UNIQUE NOT NULL,
+                        password TEXT NOT NULL
+                    )''')
+        conn.commit()
+        conn.close()
 
-# Database Model
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(50))
-    last_name = db.Column(db.String(50))
-    email = db.Column(db.String(120), unique=True)
-    phone = db.Column(db.String(10))
-    password = db.Column(db.String(100))
-    is_verified = db.Column(db.Boolean, default=False)
+init_db()
 
-# OTP Store
-otp_store = {}
+# Routes
+@app.route('/')
+def home():
+    return 'Welcome to the Home Page! <a href="/login">Login</a> | <a href="/register">Register</a>'
 
 @app.route('/register', methods=['POST'])
 def register():
-    data = request.json
-    otp = str(random.randint(100000, 999999))
-    otp_store[data['email']] = otp
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
 
-    msg = Message('IMT Email Verification OTP', recipients=[data['email']])
-    msg.body = f"Your OTP for IMT registration is: {otp}"
-    mail.send(msg)
+        conn = sqlite3.connect('backend/database.db')
+        c = conn.cursor()
 
-    return jsonify({'message': 'OTP sent to email.'})
+        try:
+            c.execute("INSERT INTO users (email, password) VALUES (?, ?)", (email, password))
+            conn.commit()
+            flash('Registration successful! Please login.', 'success')
+            return redirect(url_for('login'))
+        except sqlite3.IntegrityError:
+            flash('Email already registered!', 'danger')
+        finally:
+            conn.close()
 
-@app.route('/verify-otp', methods=['POST'])
-def verify_otp():
-    data = request.json
-    email = data['email']
-    if otp_store.get(email) == data['otp']:
-        new_user = User(
-            first_name=data['firstName'],
-            last_name=data['lastName'],
-            email=email,
-            phone=data['phone'],
-            password=data['password'],  # Hash this in production
-            is_verified=True
-        )
-        db.session.add(new_user)
-        db.session.commit()
-        otp_store.pop(email, None)
-        return jsonify({'message': 'User registered successfully.'})
-    return jsonify({'message': 'Invalid OTP'}), 400
+    return render_template('register.html')
+
+@app.route('/login', methods=[ 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        conn = sqlite3.connect('backend/database.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM users WHERE email=? AND password=?", (email, password))
+        user = c.fetchone()
+        conn.close()
+
+        if user:
+            session['user_id'] = user[0]
+            flash('Login successful!', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid credentials!', 'danger')
+
+    return render_template('login.html')
+
+@app.route('/dashboard')
+def dashboard():
+    if 'user_id' not in session:
+        flash('Please login first.', 'warning')
+        return redirect(url_for('login'))
+    
+    return 'Welcome to your Dashboard! <a href="/logout">Logout</a>'
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    flash('Logged out successfully.', 'info')
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
+@app.route('/login', methods=['POST'])
+def login():
+    # Your login logic here
+    email = request.form.get('email')
+    password = request.form.get('password')
+    # Verify credentials, etc.
+    return jsonify({'message': 'Login successful'})  # Respond with a JSON message
