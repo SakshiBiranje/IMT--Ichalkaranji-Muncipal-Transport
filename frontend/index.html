@@ -21,8 +21,12 @@
                     <li><a href="search.html">Search Buses</a></li>
                     <li><a href="pass-application.html">Monthly Pass</a></li>
                     <li><a href="about.html">About</a></li>
-                    <li><a href="login.html" class="btn btn-primary">Login</a></li>
+                    <!-- Login button (Initially visible if not logged in) -->
+                    <li><a href="login.html" id="login-button" class="btn btn-primary" style="display:none;">Login</a></li>
+                    <!-- Logout button (Initially visible if logged in) -->
+                    <li><a href="#" id="logout-button" class="btn btn-primary" style="display:none;">Logout</a></li>
                 </ul>
+                
                 <div class="hamburger">
                     <span class="bar"></span>
                     <span class="bar"></span>
@@ -31,6 +35,44 @@
             </nav>
         </div>
     </header>
+    
+    <script>
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+        });
+    
+        // Function to check if user is logged in
+        function checkLoginStatus() {
+            const currentUser = localStorage.getItem('currentUser');
+            const logoutButton = document.getElementById('logout-button');
+            const loginButton = document.getElementById('login-button');
+    
+            if (currentUser) {
+                // Show logout button, hide login button
+                logoutButton.style.display = 'block';
+                loginButton.style.display = 'none';
+            } else {
+                // Show login button, hide logout button
+                loginButton.style.display = 'block';
+                logoutButton.style.display = 'none';
+            }
+        }
+    
+        // Logout user and clear session
+        const logoutButton = document.getElementById('logout-button');
+        if (logoutButton) {
+            logoutButton.addEventListener('click', function() {
+                // Clear user data from localStorage
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('authToken');
+    
+                // Redirect to login page after logout
+                window.location.href = 'login.html'; // Redirect to login page
+            });
+        }
+    </script>
+    
 
    <!-- Bootstrap Carousel -->
 <div id="busCarousel" class="carousel slide" data-bs-ride="carousel">
