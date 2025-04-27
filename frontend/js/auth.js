@@ -170,6 +170,39 @@ async function loginUser(email, password, rememberMe) {
 localStorage.setItem('isLoggedIn', 'true');
 window.location.href = "index.html"; // Redirect back to home page
 
+// In assets/js/auth.js
+document.addEventListener('DOMContentLoaded', function () {
+    const loginForm = document.getElementById('login-form');
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', function (e) {
+            e.preventDefault(); // Stop the normal form submission
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            fetch('login.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data.includes('success')) { // You can adjust this based on your login.php output
+                    localStorage.setItem('isLoggedIn', 'true');
+                    window.location.href = 'index.html'; // Redirect to home page
+                } else {
+                    alert('Login failed: ' + data);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    }
+});
 
 // New registerUser() function (Real)
 async function registerUser(firstName, lastName, email, phone, password) {
