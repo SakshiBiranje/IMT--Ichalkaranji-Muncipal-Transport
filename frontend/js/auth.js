@@ -166,6 +166,10 @@ async function loginUser(email, password, rememberMe) {
         showNotification("Something went wrong during login", 'error');
     }
 }
+// After login is successful
+localStorage.setItem('isLoggedIn', 'true');
+window.location.href = "index.html"; // Redirect back to home page
+
 
 // New registerUser() function (Real)
 async function registerUser(firstName, lastName, email, phone, password) {
