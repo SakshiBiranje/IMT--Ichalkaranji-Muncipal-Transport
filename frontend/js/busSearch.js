@@ -483,7 +483,7 @@ function updatePaginationButtons(currentPage) {
 /**
  * Update search results summary
  */
-function updateSearchSummary(source = 'Siddheshwar Temple', destination = 'Bus Stand', date = null) {
+function updateSearchSummary(source = 'Ganpati Temple', destination = 'Bus Stand', date = null) {
     document.getElementById('result-source').textContent = source;
     document.getElementById('result-destination').textContent = destination;
     
@@ -561,9 +561,8 @@ function showToast(message, type = 'info') {
 
 // Add popular bus stops for autocomplete - would normally come from API
 const popularStops = [
-    'Siddheshwar Temple',
+    'Ganpati Temple',
     'Bus Stand',
-    'Railway Station',
     'Market Area',
     'Hospital',
     'College Road',
@@ -571,7 +570,7 @@ const popularStops = [
     'Shahu Nagar',
     'Gandhi Chowk',
     'Laxmi Nagar',
-    'Shivaji Park',
+    'Rani Park',
     'Central Park',
     'Sports Complex',
     'Mall Road'
