@@ -38,9 +38,7 @@
                 <div class="auth-container">
                     <div class="auth-form-container">
                         <h2>Login to Your Account</h2>                      
-                        <form id="login-form" class="auth-form" method="POST" action="login.php">
-
-
+                        <form id="login-form" class="auth-form">
                             <div class="form-group">
                                 <label for="email">Email</label>
                                 <input type="email" id="email" name="email" placeholder="Enter your email" required>
@@ -123,5 +121,66 @@
 
     <script src="assets/js/main.js"></script>
     <script src="assets/js/auth.js"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+        
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+        
+            fetch('login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    updateUIToLoggedIn();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(err => {
+                console.error("Fetch error:", err);
+                alert("An error occurred. Try again.");
+            });
+        });
+        
+        function updateUIToLoggedIn() {
+            const loginBtn = document.querySelector('.nav-menu li a.active');
+            if (loginBtn) {
+                loginBtn.textContent = 'Logout';
+                loginBtn.classList.remove('active');
+                loginBtn.classList.add('btn-secondary');
+                loginBtn.href = '#';
+                loginBtn.onclick = logout;
+            }
+        
+            const formContainer = document.querySelector('.auth-form-container');
+            if (formContainer) {
+                formContainer.innerHTML = `
+                    <h2>Welcome!</h2>
+                    <p>You are now logged in.</p>
+                `;
+            }
+        }
+        
+        function logout() {
+            fetch('logout.php')
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                location.reload(); // refresh page
+            })
+            .catch(err => {
+                console.error("Logout error:", err);
+                alert("Logout failed.");
+            });
+        }
+        </script>
+        
+        
 </body>
 </html>
