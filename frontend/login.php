@@ -1,4 +1,10 @@
 <?php
+header('Content-Type: application/json');
+session_start();
+
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 // Database connection
 $servername = "localhost";
 $username = "root";
@@ -6,10 +12,9 @@ $password = "";
 $dbname = "imt_db";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    echo json_encode(["status" => "error", "message" => "Database connection failed."]);
+    exit();
 }
 
 // Get POST data
@@ -22,29 +27,23 @@ if (empty($email) || empty($password)) {
     exit();
 }
 
-// Prepare and execute query
+// Check user in database
 $stmt = $conn->prepare("SELECT id, password FROM users WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $stmt->store_result();
 
 if ($stmt->num_rows > 0) {
-    // User found
     $stmt->bind_result($id, $hashedPassword);
     $stmt->fetch();
 
-    // Verify password
     if (password_verify($password, $hashedPassword)) {
-        // Login successful
+        $_SESSION['user_id'] = $id;
         echo json_encode(["status" => "success", "message" => "Login successful!"]);
-        // Optionally, start a session here
     } else {
-        // Incorrect password
         echo json_encode(["status" => "error", "message" => "Invalid email or password."]);
     }
-} 
-else {
-    // User not found
+} else {
     echo json_encode(["status" => "error", "message" => "User not found."]);
 }
 
