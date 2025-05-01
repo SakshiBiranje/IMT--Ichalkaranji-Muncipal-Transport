@@ -48,6 +48,7 @@ if (!$stmt) {
     exit();
 }
 
+
 $stmt->bind_param("sssss", $firstName, $lastName, $email, $phone, $hashedPassword);
 
 // Execute
