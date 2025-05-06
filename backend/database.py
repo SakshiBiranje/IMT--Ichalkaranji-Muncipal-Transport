@@ -18,6 +18,7 @@ def init_db():
 def add_user(data):
     conn = sqlite3.connect("imt.db")
     cur = conn.cursor()
+    
     cur.execute('''
         INSERT INTO users (name, email, phone, password)
         VALUES (?, ?, ?, ?)
