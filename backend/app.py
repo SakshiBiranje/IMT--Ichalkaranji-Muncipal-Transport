@@ -72,7 +72,6 @@ def dashboard():
     if 'user_id' not in session:
         flash('Please login first.', 'warning')
         return redirect(url_for('login'))
-    
     return 'Welcome to your Dashboard! <a href="/logout">Logout</a>'
 
 @app.route('/logout')
