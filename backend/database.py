@@ -15,6 +15,7 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 def add_user(data):
     conn = sqlite3.connect("imt.db")
     cur = conn.cursor()
