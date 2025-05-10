@@ -17,7 +17,6 @@ def send_otp(email):
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
         server.login("your.email@gmail.com", "yourpassword")
         server.send_message(msg)
-
     return otp
 
 def verify_otp(email, user_otp):
