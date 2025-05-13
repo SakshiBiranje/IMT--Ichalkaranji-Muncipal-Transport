@@ -58,5 +58,6 @@ if ($stmt->execute()) {
     echo json_encode(["status" => "error", "message" => "Registration Failed: " . $stmt->error]);
 }
 
+
 $stmt->close();
 $conn->close();
