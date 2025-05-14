@@ -43,9 +43,11 @@ if ($stmt->num_rows > 0) {
     } else {
         echo json_encode(["status" => "error", "message" => "Invalid email or password."]);
     }
-} else {
+} else
+ {
     echo json_encode(["status" => "error", "message" => "User not found."]);
 }
+
 
 $stmt->close();
 $conn->close();
