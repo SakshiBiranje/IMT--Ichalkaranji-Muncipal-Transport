@@ -48,7 +48,6 @@ if ($stmt->num_rows > 0) {
     echo json_encode(["status" => "error", "message" => "User not found."]);
 }
 
-
 $stmt->close();
 $conn->close();
 ?>
