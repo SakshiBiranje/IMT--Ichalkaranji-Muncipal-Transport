@@ -50,7 +50,6 @@ if (!$stmt) {
 
 
 $stmt->bind_param("sssss", $firstName, $lastName, $email, $phone, $hashedPassword);
-
 // Execute
 if ($stmt->execute()) {
     echo json_encode(["status" => "success", "message" => "Registration Successful!"]);
