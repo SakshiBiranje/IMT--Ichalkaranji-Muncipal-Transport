@@ -6,6 +6,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = 'sqlite:///instance/imt.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+
     # Email Configuration
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 587
