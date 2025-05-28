@@ -36,6 +36,7 @@ app.use('/api/passes', passRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Catch-all route to serve frontend in production
+
 if (process.env.NODE_ENV === 'production') {
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
