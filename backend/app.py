@@ -19,7 +19,6 @@ def init_db():
         conn.close()
 init_db()
 
-
 # Routes
 @app.route('/')
 def home():
