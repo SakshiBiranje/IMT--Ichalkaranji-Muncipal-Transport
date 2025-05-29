@@ -9,6 +9,7 @@ def send_otp(email):
 
     msg = EmailMessage()
     msg.set_content(f"Your OTP is {otp}")
+    
     msg['Subject'] = 'IMT Registration OTP'
     msg['From'] = "your.email@gmail.com"
     msg['To'] = email
