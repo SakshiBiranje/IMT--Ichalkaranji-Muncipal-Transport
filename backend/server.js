@@ -28,6 +28,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend')));
 }
 
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/buses', busRoutes);
