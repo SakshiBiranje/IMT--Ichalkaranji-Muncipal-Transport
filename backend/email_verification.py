@@ -13,7 +13,6 @@ def send_otp(email):
     msg['From'] = "your.email@gmail.com"
     msg['To'] = email
 
-
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
         server.login("your.email@gmail.com", "yourpassword")
         server.send_message(msg)
