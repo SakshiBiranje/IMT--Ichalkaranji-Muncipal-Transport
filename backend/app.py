@@ -82,6 +82,7 @@ def logout():
 if __name__ == '__main__':
     app.run(debug=True)
 @app.route('/login', methods=['POST'])
+
 def login():
     # Your login logic here
     email = request.form.get('email')
