@@ -1,7 +1,6 @@
 import os
 
-class Config:
-    
+class Config: 
     SECRET_KEY = 'your-secret-key'
     SQLALCHEMY_DATABASE_URI = 'sqlite:///instance/imt.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
